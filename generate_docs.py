@@ -72,11 +72,11 @@ def generate_design_doc():
     doc.add_paragraph('')
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p.add_run('版本: 1.0').font.size = Pt(11)
+    p.add_run('版本: 1.1').font.size = Pt(11)
     doc.add_paragraph('')
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p.add_run('日期: 2026-05-16').font.size = Pt(11)
+    p.add_run('日期: 2026-05-17').font.size = Pt(11)
     doc.add_paragraph('')
 
     # ========== Chapter 1 ==========
@@ -372,19 +372,20 @@ def generate_design_doc():
     add_sub_heading(doc, '8.1 单元测试')
     doc.add_paragraph(
         '测试框架：pytest 9.0\n'
-        '测试用例总数：34\n'
-        '通过数：34\n'
+        '测试用例总数：36\n'
+        '通过数：36\n'
         '通过率：100%'
     )
     test_headers = ['测试模块', '用例数', '通过率']
     test_rows = [
+        ['test_dashboard.py', '2', '100%'],
         ['test_hotel.py', '8', '100%'],
         ['test_platform.py', '5', '100%'],
         ['test_sales.py', '4', '100%'],
         ['test_expense.py', '5', '100%'],
         ['test_reconciliation.py', '5', '100%'],
         ['test_report.py', '7', '100%'],
-        ['合计', '34', '100%'],
+        ['合计', '36', '100%'],
     ]
     add_table_with_header(doc, test_headers, test_rows)
 

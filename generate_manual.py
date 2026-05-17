@@ -68,7 +68,7 @@ def generate_manual():
     doc.add_paragraph('')
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p.add_run('版本: 1.0').font.size = Pt(11)
+    p.add_run('版本: 1.1').font.size = Pt(11)
     doc.add_paragraph('')
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER

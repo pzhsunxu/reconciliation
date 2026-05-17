@@ -10,7 +10,7 @@
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="search.status" clearable style="width: 130px">
-            <el-option label="草稿" value="draft" />
+            <el-option label="待复核" value="draft" />
             <el-option label="已复核" value="reviewed" />
           </el-select>
         </el-form-item>
@@ -20,43 +20,50 @@
       </el-form>
     </div>
 
-    <el-table :data="reports" stripe style="width: 100%" :show-overflow-tooltip="false">
+    <el-table :data="reports" stripe style="width: 100%">
       <el-table-column prop="id" label="ID" width="50" fixed />
-      <el-table-column label="酒店" min-width="120">
+      <el-table-column label="酒店" min-width="110">
         <template #default="{ row }">{{ getHotelName(row.hotel_id) }}</template>
       </el-table-column>
-      <el-table-column label="周期起始" width="100">
-        <template #default="{ row }"><span class="mono">{{ row.period_start }}</span></template>
-      </el-table-column>
-      <el-table-column label="周期结束" width="100">
-        <template #default="{ row }"><span class="mono">{{ row.period_end }}</span></template>
+      <el-table-column label="对账周期" width="130">
+        <template #default="{ row }">
+          <span class="mono">{{ row.period_start }} ~ {{ row.period_end }}</span>
+        </template>
       </el-table-column>
       <el-table-column label="总销售额" min-width="100">
-        <template #default="{ row }"><span class="amount">¥{{ row.total_sales.toFixed(2) }}</span></template>
+        <template #default="{ row }"><span class="val green">¥{{ fmt(row.total_sales) }}</span></template>
       </el-table-column>
       <el-table-column label="净收入" min-width="100">
-        <template #default="{ row }"><span class="net">¥{{ row.total_net_income.toFixed(2) }}</span></template>
+        <template #default="{ row }"><span class="val cyan">¥{{ fmt(row.total_net_income) }}</span></template>
       </el-table-column>
       <el-table-column label="公司应得" min-width="100">
-        <template #default="{ row }"><span class="company-amt">¥{{ row.company_amount.toFixed(2) }}</span></template>
+        <template #default="{ row }"><span class="val green">¥{{ fmt(row.company_amount) }}</span></template>
       </el-table-column>
       <el-table-column label="房东应得" min-width="100">
-        <template #default="{ row }"><span class="owner-amt">¥{{ row.owner_amount.toFixed(2) }}</span></template>
+        <template #default="{ row }"><span class="val purple">¥{{ fmt(row.owner_amount) }}</span></template>
       </el-table-column>
       <el-table-column label="状态" width="80">
         <template #default="{ row }">
           <span class="report-status" :class="row.status">
-            {{ row.status === 'reviewed' ? '已复核' : '草稿' }}
+            {{ row.status === 'reviewed' ? '已复核' : '待复核' }}
           </span>
         </template>
       </el-table-column>
-      <el-table-column prop="reviewer" label="复核人" width="80" />
+      <el-table-column label="复核人" width="80" />
       <el-table-column label="操作" min-width="180" align="center" fixed="right">
         <template #default="{ row }">
           <div class="action-btns">
-            <el-button size="small" @click="openDetail(row)">详情</el-button>
-            <el-button v-if="row.status !== 'reviewed'" size="small" type="primary" @click="handleReview(row.id)">复核</el-button>
-            <el-button size="small" type="success" @click="handleExport(row.id)">导出</el-button>
+            <el-button link class="btn-link" @click="openDetail(row)">详情</el-button>
+            <el-button
+              link
+              class="btn-link"
+              :class="row.status === 'reviewed' ? 'btn-reviewed' : 'btn-review'"
+              :disabled="row.status === 'reviewed'"
+              @click="row.status !== 'reviewed' && handleReview(row.id)"
+            >
+              {{ row.status === 'reviewed' ? '已复核' : '复核' }}
+            </el-button>
+            <el-button link class="btn-link btn-export" @click="handleExport(row.id)">导出</el-button>
           </div>
         </template>
       </el-table-column>
@@ -66,24 +73,12 @@
       <el-descriptions :column="2" border v-if="currentReport">
         <el-descriptions-item label="酒店">{{ getHotelName(currentReport.hotel_id) }}</el-descriptions-item>
         <el-descriptions-item label="对账周期">{{ currentReport.period_start }} 至 {{ currentReport.period_end }}</el-descriptions-item>
-        <el-descriptions-item label="总销售额">
-          <span class="amount">¥{{ currentReport.total_sales.toFixed(2) }}</span>
-        </el-descriptions-item>
-        <el-descriptions-item label="平台佣金">
-          <span class="commission">¥{{ currentReport.total_commission.toFixed(2) }}</span>
-        </el-descriptions-item>
-        <el-descriptions-item label="净收入">
-          <span class="net">¥{{ currentReport.total_net_income.toFixed(2) }}</span>
-        </el-descriptions-item>
-        <el-descriptions-item label="日常开支">
-          <span class="expense-amt">¥{{ currentReport.total_expense.toFixed(2) }}</span>
-        </el-descriptions-item>
-        <el-descriptions-item label="公司应得">
-          <span class="company-amt">¥{{ currentReport.company_amount.toFixed(2) }}</span>
-        </el-descriptions-item>
-        <el-descriptions-item label="房东应得">
-          <span class="owner-amt">¥{{ currentReport.owner_amount.toFixed(2) }}</span>
-        </el-descriptions-item>
+        <el-descriptions-item label="总销售额"><span class="val green">¥{{ fmt(currentReport.total_sales) }}</span></el-descriptions-item>
+        <el-descriptions-item label="平台佣金"><span class="val pink">¥{{ fmt(currentReport.total_commission) }}</span></el-descriptions-item>
+        <el-descriptions-item label="净收入"><span class="val cyan">¥{{ fmt(currentReport.total_net_income) }}</span></el-descriptions-item>
+        <el-descriptions-item label="日常开支"><span class="val orange">¥{{ fmt(currentReport.total_expense) }}</span></el-descriptions-item>
+        <el-descriptions-item label="公司应得"><span class="val green">¥{{ fmt(currentReport.company_amount) }}</span></el-descriptions-item>
+        <el-descriptions-item label="房东应得"><span class="val purple">¥{{ fmt(currentReport.owner_amount) }}</span></el-descriptions-item>
         <el-descriptions-item label="复核人">{{ currentReport.reviewer || '-' }}</el-descriptions-item>
         <el-descriptions-item label="复核时间">{{ currentReport.reviewed_at || '-' }}</el-descriptions-item>
       </el-descriptions>
@@ -104,6 +99,7 @@ const detailVisible = ref(false)
 const currentReport = ref(null)
 const reviewing = ref(false)
 
+const fmt = (v) => Number(v).toFixed(2)
 const getHotelName = (id) => {
   const h = hotelList.value.find((x) => x.id === id)
   return h ? h.name : ''
@@ -166,44 +162,74 @@ onMounted(async () => {
 .mono {
   font-family: 'Share Tech Mono', monospace;
   color: var(--text-secondary);
+  font-size: 12px;
 }
 
-.amount { font-family: 'Share Tech Mono', monospace; color: var(--accent-green); }
-.commission { font-family: 'Share Tech Mono', monospace; color: var(--accent-pink); }
-.net { font-family: 'Share Tech Mono', monospace; color: var(--accent-cyan); }
-.expense-amt { font-family: 'Share Tech Mono', monospace; color: #ffaa33; }
-.company-amt { font-family: 'Share Tech Mono', monospace; color: var(--accent-green); }
-.owner-amt { font-family: 'Share Tech Mono', monospace; color: var(--accent-purple); }
+.val {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+}
+
+.val.green { color: var(--accent-green); }
+.val.cyan { color: var(--accent-cyan); }
+.val.purple { color: var(--accent-purple); }
+.val.pink { color: var(--accent-pink); }
+.val.orange { color: #ffaa33; }
 
 .report-status {
   font-weight: 600;
   font-size: 13px;
 }
 
-.report-status.draft {
-  color: var(--text-secondary);
-}
-
+.report-status.draft { color: var(--text-secondary); }
 .report-status.reviewed {
   color: var(--accent-green);
   text-shadow: 0 0 6px rgba(0, 255, 136, 0.3);
 }
 
+/* Action buttons - link style for compact layout */
 .action-btns {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 6px;
+  gap: 16px;
 }
 
-.action-btns :deep(.el-button) {
-  padding: 5px 10px;
-  min-width: auto;
-  font-size: 12px;
+.btn-link {
+  font-size: 13px !important;
+  padding: 0 4px !important;
+  min-width: auto !important;
+  height: auto !important;
+  line-height: 1.5 !important;
+  color: var(--text-primary) !important;
 }
 
-.action-btns :deep(.el-button.is-small) {
-  padding: 5px 10px;
+.btn-link:hover {
+  color: var(--accent-cyan) !important;
 }
 
+.btn-review {
+  color: var(--accent-cyan) !important;
+}
+
+.btn-review:hover {
+  color: #4dd9ff !important;
+}
+
+.btn-reviewed {
+  color: rgba(0, 255, 136, 0.5) !important;
+  cursor: not-allowed;
+}
+
+.btn-reviewed:hover {
+  color: rgba(0, 255, 136, 0.5) !important;
+}
+
+.btn-export {
+  color: var(--accent-green) !important;
+}
+
+.btn-export:hover {
+  color: #66ffbb !important;
+}
 </style>

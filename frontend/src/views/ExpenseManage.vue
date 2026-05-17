@@ -25,19 +25,19 @@
           <span class="cat-badge" :class="row.category">{{ categoryLabel(row.category) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="金额" min-width="100">
-        <template #default="{ row }"><span class="amount">¥{{ row.amount.toFixed(2) }}</span></template>
+      <el-table-column label="金额" min-width="110">
+        <template #default="{ row }"><span class="amount">¥{{ Number(row.amount).toFixed(2) }}</span></template>
       </el-table-column>
       <el-table-column prop="description" label="说明" min-width="100" />
       <el-table-column label="日期" width="110">
         <template #default="{ row }"><span class="mono">{{ row.expense_date }}</span></template>
       </el-table-column>
       <el-table-column prop="created_by" label="录入人" width="80" />
-      <el-table-column label="操作" min-width="140" align="center" fixed="right">
+      <el-table-column label="操作" width="120" align="center" fixed="right">
         <template #default="{ row }">
           <div class="action-btns">
-            <el-button size="small" @click="openDialog(row)">编辑</el-button>
-            <el-button size="small" type="danger" @click="handleDelete(row.id)">删除</el-button>
+            <el-button link class="btn-edit" @click="openDialog(row)">编辑</el-button>
+            <el-button link class="btn-delete" @click="handleDelete(row.id)">删除</el-button>
           </div>
         </template>
       </el-table-column>
@@ -193,9 +193,27 @@ onMounted(async () => {
 }
 
 .action-btns :deep(.el-button) {
-  padding: 5px 10px;
-  min-width: auto;
-  font-size: 12px;
+  padding: 0 4px !important;
+  min-width: auto !important;
+  height: auto !important;
+  line-height: 1.5 !important;
+  font-size: 13px !important;
+}
+
+.btn-edit {
+  color: var(--accent-cyan) !important;
+}
+
+.btn-edit:hover {
+  color: #4dd9ff !important;
+}
+
+.btn-delete {
+  color: var(--accent-pink) !important;
+}
+
+.btn-delete:hover {
+  color: #ff6699 !important;
 }
 
 </style>

@@ -279,9 +279,19 @@ const initRingChart = () => {
 onMounted(async () => {
   try {
     const res = await getDashboardStats()
-    stats.value = res.data
+    const data = res.data
+    stats.value = {
+      total_hotels: data.total_hotels || 0,
+      split_hotels: data.split_hotels || 0,
+      total_jobs: data.total_jobs || 0,
+      completed_jobs: data.completed_jobs || 0,
+      pending_review: data.pending_review || 0,
+      reviewed_reports: data.reviewed_reports || 0,
+      this_month_sales: Number(data.this_month_sales) || 0,
+      platform_sales: data.platform_sales || [],
+    }
     await nextTick()
-    initBarChart(res.data.platform_sales)
+    initBarChart(stats.value.platform_sales)
     initRingChart()
   } catch (e) {
     console.error('Failed to load dashboard stats', e)
